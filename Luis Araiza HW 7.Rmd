@@ -1,0 +1,70 @@
+---
+title: "MPG of US and Japanese Cars"
+author: "Luis Araiza"
+date: "3/6/2022"
+output: html_document
+---
+
+# Summary of Data
+
+We are going to first read in the data from a github site and display the data.
+```{r}
+dat<-read.csv("https://raw.githubusercontent.com/tmatis12/datafiles/main/US_Japanese_Cars.csv")
+names(dat)[names(dat) == "ï..USCars"] <- "USCars"
+#Ran into a problem loading raw data for some reason there is a name change when importing
+knitr::kable(dat)
+
+```
+
+We would like to test the hypothesis that μ1=μ2 against the alternative that μ1≠μ2 at and α=0.05 level of significance. This is **very** important as
+
+1. Fuel efficiency affects carbon emissions
+2. Fuel prices for society
+
+Further, we are using this analysis to determine whether the EPA should impose penalties on carmakers.
+
+# Boxplot
+A boxplot of the data is as follows
+```{r}
+boxplot(dat$USCars,dat$JapaneseCars,
+        main="Boxplot of MPG for US and Japanese Cars",
+        col=c("red","green"),
+        names=c("USCars","JapaneseCars"))
+```
+
+# Transformation
+It appears that the means do differ, yet there may be a problem with constant variance when doing a two-sample t-test. Lets transform the data by taking the natural log
+```{r}
+dat$USCars<-log(dat$USCars)
+dat$JapaneseCars<-log(dat$JapaneseCars)
+```
+The sample standard deviation,s2, of US cars after the transformation is 0.2466874, and for Japanese cars is 0.1820182 (note: use inline R code to calcuate the standard deviations, don’t just type in), for which it deemed that σ1≈σ2, and hence a two-sample t-test is performed.
+
+# Two Sample t-test
+The t-statistic for this test may be computed as
+$$t= \frac{\bar{x_1}-\bar{x_2}}{\sqrt{(s_1^{2}/n_1)+(s_2^{2}/n_2)}}$$
+The test performed in R is as follows
+```{r}
+t.test(dat$USCars, dat$JapaneseCars,
+       alternative = "two.sided")
+```
+
+Note that the p-value is very small, and hence the equality of the means is rejected, and hence there is statistical evidence that the mean mpg of Japanese cars is less than US Cars.
+
+# Complete Code
+
+```{r eval=FALSE}
+dat<-read.csv("https://raw.githubusercontent.com/tmatis12/datafiles/main/US_Japanese_Cars.csv")
+head(dat)
+dat <- dat[,c("USCars","JapaneseCars")]
+names(dat)[names(dat) == "ï..USCars"] <- "USCars"
+boxplot(dat$USCars,dat$JapaneseCars,
+        main="Boxplot of MPG for US and Japanese Cars",
+        col=c("red","green"),
+        names=c("USCars","JapaneseCars"))
+dat$USCars<-log(dat$USCars)
+dat$JapaneseCars<-log(dat$JapaneseCars)
+t.test(dat$USCars, dat$JapaneseCars,
+       alternative = "two.sided")
+```
+
